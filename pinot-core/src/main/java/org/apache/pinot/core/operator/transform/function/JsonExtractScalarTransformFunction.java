@@ -96,8 +96,9 @@ public class JsonExtractScalarTransformFunction extends BaseTransformFunction {
               + "function");
     }
     _jsonFieldTransformFunction = firstArgument;
-    _jsonPathString = ((LiteralTransformFunction) arguments.get(1)).getLiteral();
-    String resultsType = ((LiteralTransformFunction) arguments.get(2)).getLiteral().toUpperCase();
+    // TODO: Handle the case where getLiteral can be null.
+    _jsonPathString = ((LiteralTransformFunction) arguments.get(1)).getLiteral().toString();
+    String resultsType = ((LiteralTransformFunction) arguments.get(2)).getLiteral().toString().toUpperCase();
     boolean isSingleValue = !resultsType.endsWith("_ARRAY");
     DataType dataType;
     try {

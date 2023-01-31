@@ -252,6 +252,7 @@ public class DataSchema {
   }
 
   public enum ColumnDataType {
+    NULL(null),
     INT(0),
     LONG(0L),
     FLOAT(0f),
@@ -422,6 +423,8 @@ public class DataSchema {
           return toTimestampArray(value);
         case BYTES_ARRAY:
           return (byte[][]) value;
+        case NULL:
+          return null;
         case OBJECT:
           return (Serializable) value;
         default:
