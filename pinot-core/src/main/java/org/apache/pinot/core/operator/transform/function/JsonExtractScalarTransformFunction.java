@@ -110,7 +110,7 @@ public class JsonExtractScalarTransformFunction extends BaseTransformFunction {
               + "/DOUBLE_ARRAY/STRING_ARRAY", resultsType));
     }
     if (arguments.size() == 4) {
-      _defaultValue = dataType.convert(((LiteralTransformFunction) arguments.get(3)).getLiteral());
+      _defaultValue = dataType.convert(((LiteralTransformFunction) arguments.get(3)).getLiteral().toString());
     }
     _resultMetadata = new TransformResultMetadata(dataType, isSingleValue, false);
     try {
