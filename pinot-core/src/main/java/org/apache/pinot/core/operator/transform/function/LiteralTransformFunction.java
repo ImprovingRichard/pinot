@@ -35,6 +35,7 @@ import org.apache.pinot.segment.spi.datasource.DataSource;
 import org.apache.pinot.segment.spi.index.reader.Dictionary;
 import org.apache.pinot.spi.data.FieldSpec.DataType;
 import org.apache.pinot.spi.utils.BytesUtils;
+import org.roaringbitmap.RoaringBitmap;
 
 
 /**
@@ -59,6 +60,8 @@ public class LiteralTransformFunction implements TransformFunction {
   private BigDecimal[] _bigDecimalResult;
   private String[] _stringResult;
   private byte[][] _bytesResult;
+
+  private RoaringBitmap _nullBitmap;
 
   public LiteralTransformFunction(LiteralContext literalContext) {
     Preconditions.checkNotNull(literalContext);
@@ -296,5 +299,19 @@ public class LiteralTransformFunction implements TransformFunction {
   @Override
   public byte[][][] transformToBytesValuesMV(ProjectionBlock projectionBlock) {
     throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public RoaringBitmap getNullBitmap(ProjectionBlock projectionBlock) {
+    // All literals are always non-null except null literal which is always null
+    if (_nullBitmap == null) {
+      _nullBitmap = new RoaringBitmap();
+      if (_dataType == DataType.NULL) {
+        for (int i = 0; i < projectionBlock.getNumDocs(); i++) {
+          _nullBitmap.add(i);
+        }
+      }
+    }
+    return _nullBitmap;
   }
 }

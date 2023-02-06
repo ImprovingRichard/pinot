@@ -79,6 +79,7 @@ public class ScalarTransformFunctionWrapper extends BaseTransformFunction {
 
   @Override
   public void init(List<TransformFunction> arguments, Map<String, DataSource> dataSourceMap) {
+    super.init(arguments, dataSourceMap);
     int numArguments = arguments.size();
     PinotDataType[] parameterTypes = _functionInvoker.getParameterTypes();
     Preconditions.checkArgument(numArguments == parameterTypes.length,

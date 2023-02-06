@@ -28,10 +28,12 @@ import org.apache.pinot.core.operator.transform.TransformResultMetadata;
 import org.apache.pinot.segment.spi.datasource.DataSource;
 import org.apache.pinot.segment.spi.index.reader.NullValueVectorReader;
 import org.roaringbitmap.PeekableIntIterator;
+import org.roaringbitmap.RoaringBitmap;
 
 
 public class IsNotNullTransformFunction extends BaseTransformFunction {
   private PeekableIntIterator _nullValueVectorIterator;
+  private final RoaringBitmap _nullBitmap = new RoaringBitmap();
 
   @Override
   public String getName() {
@@ -85,5 +87,10 @@ public class IsNotNullTransformFunction extends BaseTransformFunction {
       }
     }
     return _intValuesSV;
+  }
+
+  @Override
+  public RoaringBitmap getNullBitmap(ProjectionBlock projectionBlock) {
+    return _nullBitmap;
   }
 }
