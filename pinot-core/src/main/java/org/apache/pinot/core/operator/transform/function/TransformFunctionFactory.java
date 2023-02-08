@@ -313,6 +313,9 @@ public class TransformFunctionFactory {
         }
         try {
           transformFunction.init(transformFunctionArguments, dataSourceMap);
+          if (transformFunction instanceof BaseTransformFunction) {
+            ((BaseTransformFunction) transformFunction).setTransformFunctionArguments(transformFunctionArguments);
+          }
         } catch (Exception e) {
           throw new BadQueryRequestException("Caught exception while initializing transform function: " + functionName,
               e);
