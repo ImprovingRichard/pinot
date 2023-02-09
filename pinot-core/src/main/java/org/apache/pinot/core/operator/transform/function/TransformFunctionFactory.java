@@ -315,7 +315,9 @@ public class TransformFunctionFactory {
           transformFunction.init(transformFunctionArguments, dataSourceMap);
           if (transformFunction instanceof BaseTransformFunction) {
             ((BaseTransformFunction) transformFunction).setTransformFunctionArguments(transformFunctionArguments);
-            ((BaseTransformFunction) transformFunction).setNullHandlingEnabled(queryContext.isNullHandlingEnabled());
+            if (queryContext != null) {
+              ((BaseTransformFunction) transformFunction).setNullHandlingEnabled(queryContext.isNullHandlingEnabled());
+            }
           }
         } catch (Exception e) {
           throw new BadQueryRequestException("Caught exception while initializing transform function: " + functionName,
