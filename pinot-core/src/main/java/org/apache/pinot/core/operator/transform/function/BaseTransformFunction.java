@@ -94,9 +94,14 @@ public abstract class BaseTransformFunction implements TransformFunction {
   protected byte[][][] _bytesValuesMV;
 
   protected List<TransformFunction> _transformFunctionArguments;
+  protected boolean _nullHandlingEnabled;
 
   public void setTransformFunctionArguments(List<TransformFunction> arguments) {
     _transformFunctionArguments = arguments;
+  }
+
+  public void setNullHandlingEnabled(boolean nullHandlingEnabled) {
+    _nullHandlingEnabled = nullHandlingEnabled;
   }
 
   @Override

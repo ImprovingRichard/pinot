@@ -25,6 +25,7 @@ import org.apache.pinot.common.function.TransformFunctionType;
 import org.apache.pinot.core.operator.blocks.ProjectionBlock;
 import org.apache.pinot.core.operator.transform.TransformResultMetadata;
 import org.apache.pinot.segment.spi.datasource.DataSource;
+import org.roaringbitmap.RoaringBitmap;
 
 
 /**
@@ -76,6 +77,18 @@ public class NotOperatorTransformFunction extends BaseTransformFunction {
     int[] intValues = _argument.transformToIntValuesSV(projectionBlock);
     for (int i = 0; i < numDocs; i++) {
       _intValuesSV[i] = getLogicalNegate(intValues[i]);
+    }
+
+    // TODO: For now, handle NOT against null values by returning false.
+    //  Allows for correct flow when passed to other functions.
+    //  In SQL, the negation of NULL/UNKNOWN is still NULL/UNKNOWN. Revisit when null is fully supported.
+    if (_nullHandlingEnabled) {
+      for (int i = 0; i < numDocs; i++) {
+        RoaringBitmap nulls = _argument.getNullBitmap(projectionBlock);
+        if (nulls.contains(i)) {
+          _intValuesSV[i] = 0;
+        }
+      }
     }
     return _intValuesSV;
   }
