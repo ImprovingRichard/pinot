@@ -220,13 +220,15 @@ public class DriverUtils {
     return matcher.find();
   }
 
-  public static String enableNullHandling(PinotConnection connection, String query) {
-    if (query.contains(QueryOptionKey.ENABLE_NULL_HANDLING)) {
-      return query;
+  public static String enableQueryOptions(PinotConnection connection, String query) {
+    if (connection.isNullHandlingEnabled() && !query.contains(QueryOptionKey.ENABLE_NULL_HANDLING)) {
+      query = String.format("SET %s = true; %s", QueryOptionKey.ENABLE_NULL_HANDLING, query);
     }
 
-    return connection.isNullHandlingEnabled()
-      ? String.format("SET %s = true; %s", QueryOptionKey.ENABLE_NULL_HANDLING, query)
-      : query;
+    if (connection.useMultistageEngine() && !query.contains(QueryOptionKey.USE_MULTISTAGE_ENGINE)) {
+      query = String.format("SET %s = true; %s", QueryOptionKey.USE_MULTISTAGE_ENGINE, query);
+    }
+
+    return query;
   }
 }

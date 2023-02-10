@@ -43,6 +43,7 @@ public class PinotConnection extends AbstractBaseConnection {
   private String _controllerURL;
   private PinotControllerTransport _controllerTransport;
   private final boolean _enableNullHandling;
+  private final boolean _useMultistageEngine;
   public static final String BROKER_LIST = "brokers";
 
   PinotConnection(String controllerURL, PinotClientTransport transport, String tenant,
@@ -68,6 +69,7 @@ public class PinotConnection extends AbstractBaseConnection {
     _session = new org.apache.pinot.client.Connection(properties, brokers, transport);
 
     _enableNullHandling = Boolean.parseBoolean(properties.getProperty(QueryOptionKey.ENABLE_NULL_HANDLING));
+    _useMultistageEngine = Boolean.parseBoolean(properties.getProperty(QueryOptionKey.USE_MULTISTAGE_ENGINE));
   }
 
   public org.apache.pinot.client.Connection getSession() {
@@ -76,6 +78,10 @@ public class PinotConnection extends AbstractBaseConnection {
 
   public boolean isNullHandlingEnabled() {
     return _enableNullHandling;
+  }
+
+  public boolean useMultistageEngine() {
+    return _useMultistageEngine;
   }
 
   private List<String> getBrokerList(String controllerURL, String tenant) {
