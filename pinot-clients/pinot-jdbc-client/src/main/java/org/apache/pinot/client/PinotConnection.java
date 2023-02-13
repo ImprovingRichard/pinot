@@ -84,9 +84,10 @@ public class PinotConnection extends AbstractBaseConnection {
 
   protected String enableQueryOptions(String sql) {
     var optionsBuilder = new StringBuilder();
-    for (var possibleQueryOption: POSSIBLE_QUERY_OPTIONS) {
-      if (!sql.contains(possibleQueryOption) && _queryOptions.get(possibleQueryOption)) {
-        optionsBuilder.append("SET ").append(possibleQueryOption).append("=true; ");
+    //optionsBuilder.append("SET useMultistageEngine=true; ");
+    for (var optionEntry: _queryOptions.entrySet()) {
+      if (optionEntry.getValue() && !sql.contains(optionEntry.getKey())) {
+        optionsBuilder.append("SET ").append(optionEntry.getKey()).append("=true;\n");
       }
     }
     optionsBuilder.append(sql);
