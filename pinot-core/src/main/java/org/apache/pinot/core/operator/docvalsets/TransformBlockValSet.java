@@ -56,6 +56,8 @@ public class TransformBlockValSet implements BlockValSet {
     _projectionBlock = projectionBlock;
     _transformFunction = transformFunction;
     _expression = expression;
+    _nullBitmap = _transformFunction.getNullBitmap(projectionBlock);
+    _nullBitmapSet = _nullBitmap != null;
   }
 
   @Nullable

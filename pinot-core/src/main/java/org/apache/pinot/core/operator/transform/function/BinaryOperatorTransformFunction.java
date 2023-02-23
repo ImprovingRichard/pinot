@@ -28,6 +28,7 @@ import org.apache.pinot.core.operator.transform.TransformResultMetadata;
 import org.apache.pinot.segment.spi.datasource.DataSource;
 import org.apache.pinot.spi.data.FieldSpec.DataType;
 import org.apache.pinot.spi.utils.ByteArray;
+import org.roaringbitmap.RoaringBitmap;
 
 
 /**
@@ -140,6 +141,20 @@ public abstract class BinaryOperatorTransformFunction extends BaseTransformFunct
       // NOTE: Multi-value columns are not comparable, so we should not reach here
       default:
         throw illegalState();
+    }
+
+    // TODO: For now, handle binary operation against null values by returning false.
+    //  Allows for correct flow when passed to other functions.
+    //  In SQL, any binary operation w/ null returns NULL/UNKNOWN. Revisit when null is fully supported.
+    if (_nullHandlingEnabled) {
+      for (int i = 0; i < length; i++) {
+        RoaringBitmap leftNulls = _leftTransformFunction.getNullBitmap(projectionBlock);
+        RoaringBitmap rightNulls = _rightTransformFunction.getNullBitmap(projectionBlock);
+
+        if (leftNulls.contains(i) || rightNulls.contains(i)) {
+          _intValuesSV[i] = 0;
+        }
+      }
     }
   }
 

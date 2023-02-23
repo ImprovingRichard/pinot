@@ -29,6 +29,7 @@ import org.apache.pinot.core.operator.blocks.ProjectionBlock;
 import org.apache.pinot.core.operator.transform.TransformResultMetadata;
 import org.apache.pinot.segment.spi.datasource.DataSource;
 import org.apache.pinot.spi.data.FieldSpec.DataType;
+import org.roaringbitmap.RoaringBitmap;
 
 
 /**
@@ -63,6 +64,7 @@ public class CaseTransformFunction extends BaseTransformFunction {
   private int _numSelections;
   private TransformResultMetadata _resultMetadata;
   private int[] _selectedResults;
+  private ProjectionBlock _lastProjectionBlock;
 
   @Override
   public String getName() {
@@ -246,6 +248,10 @@ public class CaseTransformFunction extends BaseTransformFunction {
    * matched, so go to ELSE.
    */
   private int[] getSelectedArray(ProjectionBlock projectionBlock) {
+    if (projectionBlock == _lastProjectionBlock) {
+      return _selectedResults;
+    }
+    _lastProjectionBlock = projectionBlock;
     int numDocs = projectionBlock.getNumDocs();
     if (_selectedResults == null || _selectedResults.length < numDocs) {
       _selectedResults = new int[numDocs];
@@ -476,5 +482,27 @@ public class CaseTransformFunction extends BaseTransformFunction {
       }
     }
     return _bytesValuesSV;
+  }
+
+  @Override
+  public RoaringBitmap getNullBitmap(ProjectionBlock projectionBlock) {
+    RoaringBitmap bitmap = new RoaringBitmap();
+    int[] selected = getSelectedArray(projectionBlock);
+    int numDocs = projectionBlock.getNumDocs();
+    int numElseThenStatements = _elseThenStatements.size();
+    for (int i = 0; i < numElseThenStatements; i++) {
+      if (_selections[i]) {
+        TransformFunction transformFunction = _elseThenStatements.get(i);
+        RoaringBitmap functionBitmap = transformFunction.getNullBitmap(projectionBlock);
+        for (int j = 0; j < numDocs; j++) {
+          if (selected[j] == i) {
+            if (functionBitmap != null && functionBitmap.contains(j)) {
+              bitmap.add(j);
+            }
+          }
+        }
+      }
+    }
+    return bitmap;
   }
 }

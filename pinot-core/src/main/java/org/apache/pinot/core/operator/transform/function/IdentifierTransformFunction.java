@@ -27,6 +27,7 @@ import org.apache.pinot.segment.spi.datasource.DataSource;
 import org.apache.pinot.segment.spi.datasource.DataSourceMetadata;
 import org.apache.pinot.segment.spi.evaluator.TransformEvaluator;
 import org.apache.pinot.segment.spi.index.reader.Dictionary;
+import org.roaringbitmap.RoaringBitmap;
 
 
 /**
@@ -205,5 +206,14 @@ public class IdentifierTransformFunction implements TransformFunction, PushDownT
   public void transformToStringValuesMV(ProjectionBlock projectionBlock, TransformEvaluator evaluator,
       String[][] buffer) {
     projectionBlock.fillValues(_columnName, evaluator, buffer);
+  }
+
+  @Override
+  public RoaringBitmap getNullBitmap(ProjectionBlock projectionBlock) {
+    RoaringBitmap columnNullBitmap = projectionBlock.getBlockValueSet(_columnName).getNullBitmap();
+    if (columnNullBitmap != null) {
+      return columnNullBitmap.clone();
+    }
+    return new RoaringBitmap();
   }
 }

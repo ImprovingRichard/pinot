@@ -19,11 +19,13 @@
 package org.apache.pinot.core.operator.transform.function;
 
 import java.math.BigDecimal;
+import java.util.List;
 import org.apache.pinot.core.operator.blocks.ProjectionBlock;
 import org.apache.pinot.core.operator.transform.TransformResultMetadata;
 import org.apache.pinot.segment.spi.index.reader.Dictionary;
 import org.apache.pinot.spi.data.FieldSpec.DataType;
 import org.apache.pinot.spi.utils.ArrayCopyUtils;
+import org.roaringbitmap.RoaringBitmap;
 
 
 /**
@@ -90,6 +92,17 @@ public abstract class BaseTransformFunction implements TransformFunction {
   protected double[][] _doubleValuesMV;
   protected String[][] _stringValuesMV;
   protected byte[][][] _bytesValuesMV;
+
+  protected List<TransformFunction> _transformFunctionArguments;
+  protected boolean _nullHandlingEnabled;
+
+  public void setTransformFunctionArguments(List<TransformFunction> arguments) {
+    _transformFunctionArguments = arguments;
+  }
+
+  public void setNullHandlingEnabled(boolean nullHandlingEnabled) {
+    _nullHandlingEnabled = nullHandlingEnabled;
+  }
 
   @Override
   public Dictionary getDictionary() {
@@ -614,5 +627,18 @@ public abstract class BaseTransformFunction implements TransformFunction {
       ArrayCopyUtils.copy(stringValuesMV, _bytesValuesMV, length);
     }
     return _bytesValuesMV;
+  }
+
+  @Override
+  public RoaringBitmap getNullBitmap(ProjectionBlock projectionBlock) {
+    // Default behaviour for functions is if at least one argument is null then output should be null
+    RoaringBitmap nullBitmap = new RoaringBitmap();
+    for (TransformFunction arg : _transformFunctionArguments) {
+      RoaringBitmap argumentBitmap = arg.getNullBitmap(projectionBlock);
+      if (argumentBitmap != null) {
+        nullBitmap.or(argumentBitmap);
+      }
+    }
+    return nullBitmap;
   }
 }
